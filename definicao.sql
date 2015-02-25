@@ -19,8 +19,9 @@ mysql>	create table comclien(
 			d_dataclien date,
 			c_cnpjclien varchar(15),
 			c_foneclien varchar(15),
-			primary key (n_numeclien));	
-
+			c_cidaclien varchar(50),
+			c_estaclien varchar(50),
+			primary key (n_numeclien));		
 		
 		
 mysql>	create table comforne(
@@ -49,18 +50,16 @@ mysql>	create table comvenda(
 			n_descvenda float(10,2),
 			n_totavenda float(10,2),
 			d_datavenda date,	
-			primary key(n_numevenda));	
+			primary key(n_numevenda));
 
-mysql>	create table comvendas(
-			n_numevenda int not null auto_increment,
-			c_codivenda varchar(10),
-			n_numeclien int not null,
-			n_numeforne int not null,
-			n_valovenda float(10,2),
-			n_descvenda float(10,2),
-			n_totavenda float(10,2),
-			d_datavenda date,	
-			primary key(n_numevenda));	
+mysql> create table comvende(
+			n_numevende int not null auto_increment,
+			c_codivende varchar(10),
+			c_nomevende varchar(50),
+			c_razavende varchar(50),
+			c_fonevende varchar(10),
+			n_porcvende float(10,2),
+			primary key(n_numevende));			
 		
 mysql>	create table comivenda(
 			n_numeivenda int not null auto_increment,
@@ -118,6 +117,18 @@ mysql>	alter table comvenda add constraint fk_comprodu_conforne
 mysql>  alter table comvenda add constraint fk_comvenda_comclien 
 			foreign key(n_numeclien) 
 				references comclien(n_numeclien)
+					on delete no action
+					on update no action;
+
+mysql>  alter table comvenda add constraint fk_comvenda_comvende 
+			foreign key(n_numevende) 
+				references comvende(n_numevende)
+					on delete no action
+					on update no action;
+					
+mysql>  alter table comvenda add constraint fk_comvenda_comforne 
+			foreign key(n_numeforne) 
+				references comforne(n_numeforne)
 					on delete no action
 					on update no action;
 
