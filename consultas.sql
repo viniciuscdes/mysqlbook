@@ -9,3 +9,5 @@
 Arquivo: consultas.sql
 
 */
+
+Acesse: http://viniciuscdes.net/blog/guiarapidomysql/
