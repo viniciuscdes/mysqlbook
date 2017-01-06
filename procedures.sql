@@ -1,35 +1,3 @@
-/*
-*******************************************
-*   Editora: Casa do Código               *
-*   Livro..: MySQL do básico ao Avançado  *
-*   ISBN...:                              *  
-*   Autor..: Vinicius Carvalho de Souza   *
-*******************************************
-
-Arquivo: procedures.sql
-
-*/
-
-
-
-mysql> delimiter $$
-mysql> create function rt_percentual_comissao(vn_n_numevende int)
-	   returns float
-       deterministic
-	   begin
-		declare percentual_comissao float(10,2);
-
-		select n_porcvende 
-		  into percentual_comissao
-		  from convende
-		 where n_numevende = vn_n_numevende; 
-
-		return percentual_comissao;
-        end;
-mysql> $$
-mysql> delimiter ;
-
-
 mysql> delimiter $$
 mysql>create procedure processa_comissionamento(
 		in  data_inicial     date,
@@ -43,6 +11,7 @@ mysql>create procedure processa_comissionamento(
 			declare comissao       float(10,2) default 0;
 			declare valor_comissao float(10,2) default 0;
 			declare aux            int         default 0;
+			declare fimloop        int default 0;
 			
 			## cursor para buscar os registros a serem 
 			## processados entre a data inicial e data final
@@ -55,12 +24,27 @@ mysql>create procedure processa_comissionamento(
 				 where d_datavenda between data_inicial 
 				 	and data_final
 				  	and n_totavenda > 0 ;
-				
+			
+            ## Faço aqui um tratamento para o banco não 
+			## executar o loop quando ele terminar
+			## evitando que retorne qualquer erro
+			declare 
+			continue handler 
+			for sqlstate '02000' 
+			set fimloop  = 1;
+
+			
             ## abro o cursor				
 			open busca_pedido;
 				
 				## inicio do loop
 				vendas: LOOP
+				
+				##Aqui verifico que se o loop terminou
+				##e saio do loop
+				if fimloop  = 1 then 
+				  leave  vendas;
+				end if;
 				
 				##recebo o resultado da consulta em cada variável
 				fetch busca_pedido into venda, total_venda, 
@@ -83,7 +67,7 @@ mysql>create procedure processa_comissionamento(
 					## valor da comissão
 					update comvenda set 
 					n_vcomvenda = valor_comissao
-					where n_numevenda = vendedor;
+					where n_numevenda = venda;
 					commit; 
 				
 				## verifico se o percentual do vendedor é igual 
@@ -92,7 +76,7 @@ mysql>create procedure processa_comissionamento(
                 elseif(comissao = 0) then
 				    
 					update comvenda set n_vcomvenda = 0
-					where n_numevenda = vendedor;
+					where n_numevenda = venda;
 					commit;
 				
 				## se ele não possuir registro no percentual de 
@@ -105,7 +89,7 @@ mysql>create procedure processa_comissionamento(
 					
 					update 
 						comvenda set n_vcomvenda = valor_comissao
-					where n_numevenda = vendedor;
+					where n_numevenda = venda;
 					commit;  
 				## fecho o if	 
 				end if;
@@ -128,35 +112,5 @@ mysql>create procedure processa_comissionamento(
 mysql>delimiter ;	
 
 
-mysql> call 
-		processa_comissionamento('2015-01-01','2015-05-30' ,@a);
+mysql> call processa_comissionamento('2015-01-01','2015-05-30' ,@a);
 mysql> select @a;
-
-
-
-
-mysql>delimiter $$
-mysql> create function rt_nome_cliente(vn_numeclien int)
-			returns varchar(50)
-			
-			begin
-		
-				declare nome varchar(50);
-			
-				select c_nomeclien  into nome
-				  from comclien
-				where n_numeclien = vn_numeclien;
-			 
-				return nome;
-			 
-			end $$
-mysql> delimiter ;	   
-
-
-mysql> select c_codivenda, 
-              rt_nome_cliente(n_numeclien), 
-			  d_datavenda
-         from comvenda
-        order by 2,3;
-		
-		
