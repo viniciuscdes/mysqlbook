@@ -24,7 +24,7 @@ mysql>  create trigger tri_vendas_bi
 		    into percentual_comissao;
 		  
 		  ## calculo a comissão
-		  set valor_comissao = ((total_venda * comissao)  / 100);
+		  set valor_comissao = ((new.n_totavenda * percentual_comissao)  / 100);
 		  
 		  ## recebo no novo valor de comissão
 		  set new.n_vcomvenda = valor_comissao;
@@ -41,7 +41,6 @@ mysql>  create trigger tri_vendas_bu
 
 		begin
 		declare percentual_comissao float(10,2);
-		declare total_venda         float(10,2);
 		declare valor_comissao      float(10,2);
 			
 		  ## No update, verifico se o valor total novo da venda
@@ -53,7 +52,7 @@ mysql>  create trigger tri_vendas_bu
           
 		  	## cálculo da comissão
 		  	set 
-			valor_comissao = ((total_venda * comissao) / 100);
+			valor_comissao = ((new.n_totavenda * percentual_comissao) / 100);
 
 		  	## recebo no novo valor de comissão
 		  	set new.n_vcomvenda = valor_comissao;
