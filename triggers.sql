@@ -17,7 +17,8 @@ mysql>  create trigger tri_vendas_bi
 
 		begin
 		  declare percentual_comissao float(10,2);
-          
+          declare valor_comissao      float(10,2);
+		  
 		  ## busco o percentual de comissão que o vendedor deve
 		  ## receber
 		  select rt_percentual_comissao(new.n_numevende)
