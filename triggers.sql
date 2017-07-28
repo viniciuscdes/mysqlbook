@@ -69,22 +69,32 @@ mysql> create trigger tri_vendas_ai
 	   for each row
 	   begin
 	     ## declaro as variáveis que utilizarei
-	     declare vtotal_itens float(10,2);
-	     declare vtotal_item  float(10,2);
-	     declare total_item   float(10,2);
+	     declare vtotal_itens float(10,2) default 0;
+	     declare total_item   float(10,2) default 0;
+		 declare fimLoop boolean default false;
 
 		 ## cursor para buscar os itens já registrados da venda
 		 declare busca_itens cursor for
-		   select n_totaivenda
+		   select n_valoivenda
 		     from comivenda
 		    where n_numevenda = new.n_numevenda;
-
+			
+		 ##Handler para encerrar o loop antes da última linha
+		 declare continue handler for
+			sqlstate '02000' 
+			set fimLoop = true;
+		
 		  ## abro o cursor
 		  open busca_itens;
 		  ## declaro e inicio o loop
 		  itens : loop
-          
-		  	fetch busca_itens into total_item;
+			fetch busca_itens into total_item;
+			
+			#encerra o bloco quando o cursor não retornar mais linhas.
+			if fimLoop then
+				leave itens;
+			end if;
+		  		  	
 		  	## somo o valor total dos itens(produtos)
 		  	set vtotal_itens = vtotal_itens + total_item;
           
@@ -108,15 +118,21 @@ mysql> create trigger tri_ivendas_au
 	   for each row
 	   begin
 	     ## declaro as variáveis que utilizarei
-	     declare vtotal_itens float(10,2);
-	     declare vtotal_item  float(10,2);
-	     declare total_item  float(10,2);
-          
+	     declare vtotal_itens float(10,2) default 0;
+	     declare total_item  float(10,2) default 0;
+         declare fimLoop boolean default false;
+		 
 		 ## cursor para buscar os itens já registrados da venda
 		   declare busca_itens cursor for
-		   	select n_totaivenda
+		   	select n_valoivenda
 		   	  from comivenda
 		   	 where n_numevenda = new.n_numevenda;
+		 
+		 ##Handler para encerrar o loop antes da última linha
+		   declare continue handler for
+			sqlstate '02000' 
+			set fimLoop = true;
+		
 		 
 	     ## verifico se há necessidade de alteração
 	     ## faço somente se o novo valor for alterado
@@ -128,6 +144,12 @@ mysql> create trigger tri_ivendas_au
 		     itens : loop
              
 		     fetch busca_itens into total_item;
+			 
+			 #encerra o bloco quando o cursor não retornar mais linhas.
+			 if fimLoop then
+				leave itens;
+			 end if;
+			 
 		     ## somo o valor total dos itens(produtos)
 		     set vtotal_itens = vtotal_itens + total_item;
            
@@ -152,17 +174,21 @@ mysql> create trigger tri_ivendas_af
 	   for each row
 	   begin
 	     ## declaro as variáveis que utilizarei
-	     declare vtotal_itens float(10,2);
-	     declare vtotal_item  float(10,2);
-	     declare total_item  float(10,2);
-         
+	     declare vtotal_itens float(10,2) default 0;
+	     declare total_item  float(10,2) default 0;
+         declare fimLoop boolean default false;
 	     
 	     ## cursor para buscar os itens já registrados da venda
 	     declare busca_itens cursor for
-	       select n_totaivenda
+	       select n_valoivenda
 		     from comivenda
 		    where n_numevenda = old.n_numevenda;
          
+		 ##Handler para encerrar o loop antes da última linha
+		   declare continue handler for
+			sqlstate '02000' 
+			set fimLoop = true;
+		 
 	     ## abro o cursor
 	     open busca_itens;
 	     
@@ -170,6 +196,12 @@ mysql> create trigger tri_ivendas_af
 	     itens : loop
          
 	       fetch busca_itens into total_item;
+		   
+		   #encerra o bloco quando o cursor não retornar mais linhas.
+		   if fimLoop then
+			leave itens;
+		   end if;
+		   
 	       ## somo o valor total dos itens(produtos)
 	       set vtotal_itens = vtotal_itens + total_item;
          
@@ -193,24 +225,35 @@ mysql> create trigger tri_vendas_bf
 	   for each row
 	   begin
 	     ## declaro as variáveis que utilizarei
-	     declare vtotal_itens float(10,2);
-	     declare vtotal_item  float(10,2);
-	     declare total_item  float(10,2);
-         
+	     declare vtotal_itens float(10,2) default 0;
+	     declare total_item  float(10,2) default 0;
+         declare fimLoop boolean default false;
+		 
 	     ## verifico se há necessidade de alteração
 	     ## faço somente se o novo valor for alterado
 	     ## cursor para buscar os itens já registrados da venda
  	     	declare busca_itens cursor for 
-	         select n_totaivenda
+	         select n_valoivenda
 	     	   from comivenda
 	     	  where n_numevenda = old.n_numevenda;
          
+		 ##Handler para encerrar o loop antes da última linha
+			declare continue handler for
+			 sqlstate '02000' 
+			 set fimLoop = true;
+		 
 	     ## abro o cursor
 	     open busca_itens;
 	     ## declaro e inicio o loop
 	       itens : loop 
            
 	         fetch busca_itens into total_item;
+			 
+			 #encerra o bloco quando o cursor não retornar mais linhas.
+			 if fimLoop then
+				leave itens;
+			 end if;
+			 
 	         ## somo o valor total dos itens(produtos)
 	         set vtotal_itens = vtotal_itens + total_item;
            
@@ -219,7 +262,7 @@ mysql> create trigger tri_vendas_bf
 	    close busca_itens;
          
 	    ## atualizo o total da venda
-	    delete from comivenda where n_numevenda = venda;
+	    delete from comivenda where n_numevenda = old.n_numevenda;
 	   end
 mysql> $$
 mysql> delimiter ;
