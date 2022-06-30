@@ -66,7 +66,7 @@ mysql>create procedure processa_comissionamento(
 					## faço o update na tabela comvenda com o 
 					## valor da comissão
 					update comvenda set 
-					n_vcomvenda = valor_comissao
+					n_vcomvenda = valor_comissao -- Error Code: 1054. Unknown column 'n_vcomvenda' in 'field list'
 					where n_numevenda = venda;
 					commit; 
 				
